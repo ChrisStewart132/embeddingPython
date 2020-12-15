@@ -37,7 +37,7 @@ static PyObject* emb_test(PyObject* self, PyObject* args)
         return NULL;
     //PyObject* list = Py_BuildValue("[iis]", 1, 2, "three");
     Py_ssize_t n;
-    n = numargs;
+    n = numargs;//
     PyObject* list;
     list = PyList_New(n);
     for (int i = 0; i < n; i++) {
