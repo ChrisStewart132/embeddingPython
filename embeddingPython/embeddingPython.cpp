@@ -4,18 +4,13 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
+#include <stdlib.h>
+#include <windows.h>
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //python functions
 
 //variables that the python functions can read/write
-struct api {
-    float position;
-
-
-};
-
 static int numargs = 0;
 static const char* argv_contents[32];
 static int numfish = 1;
@@ -52,6 +47,18 @@ static PyObject* emb_numfish(PyObject* self, PyObject* args)
     return PyLong_FromLong(numfish);
 }
 
+static PyObject* emb_setFish(PyObject* self, PyObject* args)
+{
+    /*
+    const char* s;
+    if (!PyArg_ParseTuple(args, "s", &s))
+        return NULL;
+    printf("%s\n", s);*/
+    if (!PyArg_ParseTuple(args, "i", &numfish))
+        return NULL;
+    return PyLong_FromLong(numfish);
+}
+
 static PyMethodDef EmbMethods[] = {
     {"numargs", emb_numargs, METH_VARARGS,
      "Return the number of arguments received by the process."},
@@ -61,6 +68,9 @@ static PyMethodDef EmbMethods[] = {
 
      {"numfish", emb_numfish, METH_VARARGS,
      "get numfish."},
+
+     {"setFish", emb_setFish, METH_VARARGS,
+     "set numfish."},
 
     {NULL, NULL, 0, NULL}
 };
@@ -75,16 +85,14 @@ PyInit_emb(void)
 {
     return PyModule_Create(&EmbModule);
 }
+
 //python functions
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //help functions
-
 
 int runPythonFunction(std::string pythonFilename, std::string pythonFunctionName, std::vector<std::string> pythonFunctionArgs) {
     PyObject* pName, * pModule, * pFunc;
@@ -142,8 +150,6 @@ int runPythonFunction(std::string pythonFilename, std::string pythonFunctionName
     }
 }
 
-
-
 //help functions
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -162,14 +168,15 @@ int main(int argc, char* argv[]) {//requires to be called with args, either in p
     std::string pythonFunctionName;//main
     std::vector<std::string> pythonFunctionArgs;//stores function argv[]
 
-
-    
     ////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //main loop
     while (1) {
+        static int frame;
+        frame++;
+        
         for (int i = 0; i < numfish; i++) {
-            std::cout << "<>< ";
+            //std::cout << "<>< ";
         }
         std::cout << "\n";
         pythonFunctionArgs.clear();
@@ -190,10 +197,10 @@ int main(int argc, char* argv[]) {//requires to be called with args, either in p
             */
             pythonFilename = std::string("pythonFunctions");
             pythonFunctionName = std::string("main");
+            /*
             std::cout << "enter each argument (entering individually) for " << pythonFunctionName << "() followed by entering '-'...\n";
             int count = 0;
-            
-            
+                       
             while (1) {
                 std::string input;
                 std::cin >> input;
@@ -203,6 +210,10 @@ int main(int argc, char* argv[]) {//requires to be called with args, either in p
                 pythonFunctionArgs.push_back(input);
                 count++;
             }
+            */
+            pythonFunctionArgs.push_back(std::to_string(frame));
+            pythonFunctionArgs.push_back("1");
+
             argv_contents[0] = exeName.c_str();
             argv_contents[1] = pythonFilename.c_str();
             argv_contents[2] = pythonFunctionName.c_str();
@@ -211,21 +222,19 @@ int main(int argc, char* argv[]) {//requires to be called with args, either in p
             }
             numargs = pythonFunctionArgs.size() + 3;
         }
-
-        numfish += runPythonFunction(pythonFilename, pythonFunctionName, pythonFunctionArgs);
-
+        system("CLS");
+        //numfish = runPythonFunction(pythonFilename, pythonFunctionName, pythonFunctionArgs);
+        int temp = runPythonFunction(pythonFilename, pythonFunctionName, pythonFunctionArgs);
+        numfish = stoi(pythonFunctionArgs[0]);
+        Sleep(20);
     }
     //main loop
     ////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////
  
-    
-
     if (Py_FinalizeEx() < 0) {
         return 120;
     }
-
-
 
     return 0;
 }
